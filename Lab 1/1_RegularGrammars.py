@@ -1,8 +1,3 @@
-# TODO: grammar class
-#  function to generate 5 random strings that follows the language
-#  function to_finite_automaton
-#  function that checks if string can be obtained from state transition
-
 import random
 
 class Grammar:
@@ -26,6 +21,29 @@ class Grammar:
                     break
         return string
 
+    def to_finite_automaton(self):
+        states = self.vn  # Non-terminal symbols as states
+        alphabet = self.vt  # Terminal symbols as alphabet
+        start_state = self.start_symbol  # Start state
+        transitions = {}  # Transition function
+        final_states = set()
+
+        for key in self.p.keys():
+            for rule in self.p[key]:
+                if key not in transitions:
+                    transitions[key] = []
+                if len(rule) == 2:
+                    transitions[key].append((rule[0], rule[1]))
+                else:
+                    transitions[key].append((rule[0], None))
+
+        for key in self.p:
+            if all(rule in self.vt for rule in self.p[key]):
+                final_states.add(key)
+        final_states.add('C')
+
+        return FiniteAutomaton(states, alphabet, transitions, start_state, final_states)
+
 class FiniteAutomaton:
     def __init__(self, states, alphabet, transitions, start_state, final_states):
         self.states = states
@@ -47,4 +65,5 @@ class FiniteAutomaton:
             if next_state is None:
                 return False
             current_state = next_state
-        return current_state in self.f
+        return current_state in self.final_states
+
