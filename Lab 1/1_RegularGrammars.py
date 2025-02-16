@@ -22,25 +22,22 @@ class Grammar:
         return string
 
     def to_finite_automaton(self):
-        states = self.vn  # Non-terminal symbols as states
-        alphabet = self.vt  # Terminal symbols as alphabet
-        start_state = self.start_symbol  # Start state
-        transitions = {}  # Transition function
-        final_states = set()
-
-        for key in self.p.keys():
-            for rule in self.p[key]:
-                if key not in transitions:
-                    transitions[key] = []
-                if len(rule) == 2:
-                    transitions[key].append((rule[0], rule[1]))
-                else:
-                    transitions[key].append((rule[0], None))
+        states = self.vn | {'qf'}  #q
+        alphabet = self.vt #sigma
+        start_state = self.start_symbol #delta
+        transitions = {} #q0
+        final_states = {'qf'}  #F
 
         for key in self.p:
-            if all(rule in self.vt for rule in self.p[key]):
-                final_states.add(key)
-        final_states.add('C')
+            for rule in self.p[key]:
+                if (key, rule[0]) not in transitions:
+                    transitions[(key, rule[0])] = set()
+
+                if len(rule) == 1 and rule in self.vt:
+                    transitions[(key, rule)].add('qf')  # terminal leads to final state
+                elif len(rule) > 1:
+                    next_state = rule[1] if rule[1] in self.vn else 'qf'
+                    transitions[(key, rule[0])].add(next_state)
 
         return FiniteAutomaton(states, alphabet, transitions, start_state, final_states)
 
@@ -52,18 +49,29 @@ class FiniteAutomaton:
         self.start_state = start_state
         self.final_states = final_states
 
-    def string_belongs_to_language(self, input_string):
-        current_state = self.start_state
-        for c in input_string:
-            if c not in self.alphabet or current_state not in self.transitions:
-                return False
-            next_state = None
-            for transition in self.transitions[current_state]:
-                if c == transition[0]:
-                    next_state = transition[1] if transition[1] is not None else current_state
-                    break
-            if next_state is None:
-                return False
-            current_state = next_state
-        return current_state in self.final_states
+    def string_in_language(self, input_string):
+        current_states = {self.start_state} 
 
+        for symbol in input_string:
+            next_states = set()
+            for state in current_states:
+                if (state, symbol) in self.transitions:
+                    next_states.update(self.transitions[(state, symbol)])
+            if not next_states:
+                return False 
+            current_states = next_states  
+
+        return bool(current_states & self.final_states)  # check if any state is final
+
+# Main 
+grammar = Grammar()
+finite_automaton = grammar.to_finite_automaton()
+
+print("Generated random strings:")
+for _ in range(5):
+    print(grammar.generate_string())
+
+print("\nChecking if strings belong to the language:")
+test_strings = ["aaa", "aabb", "aa", "aabaababaaa", "ababaaa"]
+for s in test_strings:
+    print(f"String '{s}' is accepted: {finite_automaton.string_in_language(s)}")
