@@ -27,23 +27,10 @@ A finite automaton has a set of states, a set of input symbols, a transition fun
 
 ## Implementation description
 
-### 1. Grammar Class
+### 1. `generate_string()` function
 
-The `Grammar` class represents a regular grammar with a set of non-terminal symbols (`vn`), terminal symbols (`vt`), production rules (`p`), and a start symbol. The generate_string method produces random strings based on the production rules by iteratively replacing non-terminals with their corresponding derivations until only terminal symbols remain.
-```python 
-import random
-class Grammar:
-    def __init__(self):
-        self.vn = {'S', 'A', 'B', 'C'}
-        self.vt = {'a', 'b'}
-        self.p = {
-            'S': ['aA', 'aB'],
-            'A': ['bS'],
-            'B': ['aC'],
-            'C': ['a', 'bS']
-        }
-        self.start_symbol = 'S'
-
+The `generate_string()` function generates a random string based on the production rules of the grammar. It starts with the start symbol and iteratively replaces non-terminal symbols with their corresponding productions until the string consists solely of terminal symbols. This function is useful for generating valid strings that belong to the language defined by the grammar.
+```python
     def generate_string(self):
         string = self.start_symbol
         while any(v in string for v in self.vn):
@@ -56,7 +43,7 @@ class Grammar:
 
 ### 2. `to_finite_automaton()` function
 
-The `to_finite_automaton` method converts the regular grammar into a finite automaton by defining states, an alphabet, transitions, and final states. The method maps production rules to state transitions, ensuring that terminal symbols reaching a final state (`qf`) represent valid strings in the language.
+The `to_finite_automaton()` function converts the regular grammar into a finite automaton. It constructs the states, alphabet, transitions, and final states based on the grammar's production rules. The function maps each production rule to a transition in the automaton, ensuring that terminal symbols lead to the final state `(qf)`. This conversion allows the grammar to be represented as a finite automaton, which can then be used to recognize strings in the language.
 ```python
     def to_finite_automaton(self):
         states = self.vn | {'qf'}  #q
@@ -79,17 +66,10 @@ The `to_finite_automaton` method converts the regular grammar into a finite auto
         return FiniteAutomaton(states, alphabet, transitions, start_state, final_states)
 ```
 
-### 3. `FiniteAutomaton Class`
+### 3. `string_in_language()` function
 
-The `FiniteAutomaton` class models the finite automaton derived from the grammar. It consists of states, an alphabet, transition rules, a start state, and final states. The `string_in_language` method verifies whether an input string belongs to the language by processing its symbols through the transition rules and checking if the final state is reached.
+The `string_in_language()` function checks whether a given input string belongs to the language recognized by the finite automaton. It processes the string symbol by symbol, transitioning between states based on the automaton's transition rules. If the automaton reaches a final state after processing the entire string, the function returns `True`, indicating that the string is accepted by the automaton. Otherwise, it returns `False`.
 ```python
-class FiniteAutomaton:
-    def __init__(self, states, alphabet, transitions, start_state, final_states):
-        self.states = states
-        self.alphabet = alphabet
-        self.transitions = transitions
-        self.start_state = start_state
-        self.final_states = final_states
 
     def string_in_language(self, input_string):
         current_states = {self.start_state} 

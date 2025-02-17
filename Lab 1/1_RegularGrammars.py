@@ -22,46 +22,46 @@ class Grammar:
         return string
 
     def to_finite_automaton(self):
-        states = self.vn | {'qf'}  #q
-        alphabet = self.vt #sigma
-        start_state = self.start_symbol #delta
-        transitions = {} #q0
-        final_states = {'qf'}  #F
+        q = self.vn | {'qf'}  # set of states (non-terminals + final state)
+        sigma = self.vt  # alphabet (terminal symbols)
+        q0 = self.start_symbol  # start state
+        delta = {}  # transition function
+        f = {'qf'}  # set of final states
 
         for key in self.p:
             for rule in self.p[key]:
-                if (key, rule[0]) not in transitions:
-                    transitions[(key, rule[0])] = set()
+                if (key, rule[0]) not in delta:
+                    delta[(key, rule[0])] = set()
 
                 if len(rule) == 1 and rule in self.vt:
-                    transitions[(key, rule)].add('qf')  # terminal leads to final state
+                    delta[(key, rule)].add('qf')  # terminal leads to final state
                 elif len(rule) > 1:
                     next_state = rule[1] if rule[1] in self.vn else 'qf'
-                    transitions[(key, rule[0])].add(next_state)
+                    delta[(key, rule[0])].add(next_state)
 
-        return FiniteAutomaton(states, alphabet, transitions, start_state, final_states)
+        return FiniteAutomaton(q, sigma, delta, q0, f)
 
 class FiniteAutomaton:
-    def __init__(self, states, alphabet, transitions, start_state, final_states):
-        self.states = states
-        self.alphabet = alphabet
-        self.transitions = transitions
-        self.start_state = start_state
-        self.final_states = final_states
+    def __init__(self, q, sigma, delta, q0, f):
+        self.q = q  # set of states
+        self.sigma = sigma  # alphabet
+        self.delta = delta  # transition function
+        self.q0 = q0  # start state
+        self.f = f  # set of final states
 
     def string_in_language(self, input_string):
-        current_states = {self.start_state} 
+        current_states = {self.q0}  # start from the initial state
 
         for symbol in input_string:
             next_states = set()
             for state in current_states:
-                if (state, symbol) in self.transitions:
-                    next_states.update(self.transitions[(state, symbol)])
+                if (state, symbol) in self.delta:
+                    next_states.update(self.delta[(state, symbol)])
             if not next_states:
-                return False 
-            current_states = next_states  
+                return False  # no valid transition for the symbol
+            current_states = next_states
 
-        return bool(current_states & self.final_states)  # check if any state is final
+        return bool(current_states & self.f)  # check if any state is final
 
 # Main 
 grammar = Grammar()
@@ -72,6 +72,6 @@ for _ in range(5):
     print(grammar.generate_string())
 
 print("\nChecking if strings belong to the language:")
-test_strings = ["aaa", "aabb", "aa", "aabaababaaa", "ababaaa"]
+test_strings = ["aaa", "abaaa", "aa", "aabaababaaa", "ababaaab"]
 for s in test_strings:
     print(f"String '{s}' is accepted: {finite_automaton.string_in_language(s)}")
