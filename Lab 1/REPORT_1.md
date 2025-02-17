@@ -46,44 +46,43 @@ The `generate_string()` function generates a random string based on the producti
 The `to_finite_automaton()` function converts the regular grammar into a finite automaton. It constructs the states, alphabet, transitions, and final states based on the grammar's production rules. The function maps each production rule to a transition in the automaton, ensuring that terminal symbols lead to the final state `(qf)`. This conversion allows the grammar to be represented as a finite automaton, which can then be used to recognize strings in the language.
 ```python
     def to_finite_automaton(self):
-        states = self.vn | {'qf'}  #q
-        alphabet = self.vt #sigma
-        start_state = self.start_symbol #delta
-        transitions = {} #q0
-        final_states = {'qf'}  #F
+        q = self.vn | {'qf'}  # set of states (non-terminals + final state)
+        sigma = self.vt  # alphabet (terminal symbols)
+        q0 = self.start_symbol  # start state
+        delta = {}  # transition function
+        f = {'qf'}  # set of final states
 
         for key in self.p:
             for rule in self.p[key]:
-                if (key, rule[0]) not in transitions:
-                    transitions[(key, rule[0])] = set()
+                if (key, rule[0]) not in delta:
+                    delta[(key, rule[0])] = set()
 
                 if len(rule) == 1 and rule in self.vt:
-                    transitions[(key, rule)].add('qf')  # terminal leads to final state
+                    delta[(key, rule)].add('qf')  # terminal leads to final state
                 elif len(rule) > 1:
                     next_state = rule[1] if rule[1] in self.vn else 'qf'
-                    transitions[(key, rule[0])].add(next_state)
+                    delta[(key, rule[0])].add(next_state)
 
-        return FiniteAutomaton(states, alphabet, transitions, start_state, final_states)
+        return FiniteAutomaton(q, sigma, delta, q0, f)
 ```
 
 ### 3. `string_in_language()` function
 
 The `string_in_language()` function checks whether a given input string belongs to the language recognized by the finite automaton. It processes the string symbol by symbol, transitioning between states based on the automaton's transition rules. If the automaton reaches a final state after processing the entire string, the function returns `True`, indicating that the string is accepted by the automaton. Otherwise, it returns `False`.
 ```python
-
     def string_in_language(self, input_string):
-        current_states = {self.start_state} 
+        current_states = {self.q0}  # start from the initial state
 
         for symbol in input_string:
             next_states = set()
             for state in current_states:
-                if (state, symbol) in self.transitions:
-                    next_states.update(self.transitions[(state, symbol)])
+                if (state, symbol) in self.delta:
+                    next_states.update(self.delta[(state, symbol)])
             if not next_states:
-                return False 
-            current_states = next_states  
+                return False  # no valid transition for the symbol
+            current_states = next_states
 
-        return bool(current_states & self.final_states)  # check if any state is final
+        return bool(current_states & self.f)  # check if any state is final  # check if any state is final
 ```
 
 ### 4. Testing Part
