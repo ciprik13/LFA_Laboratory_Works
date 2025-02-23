@@ -35,4 +35,32 @@ def is_deterministic(delta):
     return True  # Deterministic
 
 
+# Task c: Convert NFA to DFA
+def nfa_to_dfa(Q, sigma, delta, F):
+    dfa_states = []  # List of DFA states (each is a set of NFA states)
+    dfa_delta = {}  # DFA transition function
+    dfa_final = []  # DFA final states
+    initial_state = frozenset({'q0'})  # Start with the initial state of the NFA
+    dfa_states.append(initial_state)
+
+    # Process each DFA state
+    for state in dfa_states:
+        for symbol in sigma:
+            next_state = set()
+            for nfa_state in state:
+                if (nfa_state, symbol) in delta:
+                    next_state.update(delta[(nfa_state, symbol)])
+            if next_state:
+                next_state = frozenset(next_state)
+                if next_state not in dfa_states:
+                    dfa_states.append(next_state)
+                dfa_delta[(state, symbol)] = next_state
+
+    # Determine final states in DFA
+    for state in dfa_states:
+        if any(nfa_state in F for nfa_state in state):
+            dfa_final.append(state)
+
+    return dfa_states, dfa_delta, dfa_final
+
 
