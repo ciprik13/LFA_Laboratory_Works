@@ -27,4 +27,12 @@ def fa_to_regular_grammar(Q, sigma, delta, F):
     return grammar
 
 
+# Task b: Determine if FA is Deterministic or Non-Deterministic
+def is_deterministic(delta):
+    for (state, symbol), next_states in delta.items():
+        if len(next_states) > 1:
+            return False  # Non-deterministic if multiple transitions for the same input
+    return True  # Deterministic
+
+
 
