@@ -63,4 +63,43 @@ def nfa_to_dfa(Q, sigma, delta, F):
 
     return dfa_states, dfa_delta, dfa_final
 
+# Task d: Represent FA Graphically
+def draw_fa(Q, sigma, delta, F):
+    fa = Digraph()
+    for state in Q:
+        if state in F:
+            fa.node(state, shape='doublecircle')  # Final state
+        else:
+            fa.node(state, shape='circle')  # Non-final state
+    for (state, symbol), next_states in delta.items():
+        for next_state in next_states:
+            fa.edge(state, next_state, label=symbol)
+    fa.render('fa_graph', format='png', cleanup=True)
+    print("FA graph saved as 'fa_graph.png'")
+
+
+# Main Program
+if __name__ == "__main__":
+    # Task a: Convert FA to Regular Grammar
+    grammar = fa_to_regular_grammar(Q, sigma, delta, F)
+    print("Regular Grammar:")
+    for non_terminal, productions in grammar.items():
+        print(f"{non_terminal} -> {' | '.join(productions)}")
+
+    # Task b: Determine if FA is Deterministic or Non-Deterministic
+    if is_deterministic(delta):
+        print("\nThe FA is Deterministic (DFA).")
+    else:
+        print("\nThe FA is Non-Deterministic (NFA).")
+
+    # Task c: Convert NFA to DFA
+    dfa_states, dfa_delta, dfa_final = nfa_to_dfa(Q, sigma, delta, F)
+    print("\nDFA States:", [set(state) for state in dfa_states])
+    print("DFA Transitions:")
+    for (state, symbol), next_state in dfa_delta.items():
+        print(f"δ({set(state)}, {symbol}) = {set(next_state)}")
+    print("DFA Final States:", [set(state) for state in dfa_final])
+
+    # Task d: Represent FA Graphically
+    draw_fa(Q, sigma, delta, F)
 
