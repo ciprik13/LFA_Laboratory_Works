@@ -1,4 +1,4 @@
-# Laboratory Work 2: Lexer & Scanner
+# Laboratory Work 3: Lexer & Scanner
 
 ### Course: Formal Languages & Finite Automata
 ### Author: Ciprian Moisenco
